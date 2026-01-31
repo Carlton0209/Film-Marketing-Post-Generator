@@ -2,6 +2,8 @@
 
 **AI-Powered Social Media Content Assistant for Movie Promotions**
 
+https://carlton0209.github.io/Film-Marketing-Post-Generator/
+
 ---
 
 ##  Product Brief
