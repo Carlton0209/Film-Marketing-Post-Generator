@@ -2,8 +2,6 @@
 
 **AI-Powered Social Media Content Assistant for Movie Promotions**
 
-[Live Demo](YOUR_DEPLOYMENT_URL_HERE) | [GitHub Repository](YOUR_GITHUB_URL_HERE)
-
 ---
 
 ##  Product Brief
