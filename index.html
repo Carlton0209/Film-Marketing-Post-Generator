@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Film Marketing Post Generator</title>
+<style>
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(rgba(0,0,0,0.6), rgba(26,26,46,0.7)),
+        url('https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1920') center/cover no-repeat fixed;;;min-height:100vh;padding:20px;margin:0}
+.container{max-width:900px;
+    margin:auto;
+    background:rgba(255,255,255,0.95); 
+    border-radius:20px;
+    padding:40px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+    backdrop-filter:blur(10px);}
+h1{text-align:center;color:#333;margin-bottom:10px;font-size:32px}
+.subtitle{text-align:center;color:#666;margin-bottom:30px}
+.mode-toggle{background:#fff3cd;border:2px solid #ffc107;border-radius:10px;padding:5px;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.mode-toggle label{display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:600;color:#856404;font-size:14px}
+.mode-toggle input[type="checkbox"]{width:18px;height:18px;cursor:pointer}
+.api-status{background:#e3f2fd;border-left:4px solid #2196F3;padding:12px;margin-bottom:20px;border-radius:5px;font-size:14px;color:#1976D2}
+.api-status.demo{background:#e8f5e9;border-color:#4CAF50;color:#2e7d32}
+label{display:block;font-weight:600;color:#333;margin-top:20px;margin-bottom:8px;font-size:14px}
+input,textarea,select{width:100%;padding:15px;border:2px solid #e0e0e0;border-radius:10px;font-size:16px;box-sizing:border-box}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#667eea}
+textarea{min-height:100px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+button{width:100%;margin-top:20px;padding:15px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-size:18px;font-weight:bold;border:none;border-radius:10px;cursor:pointer;transition:all 0.3s}
+button:hover{transform:translateY(-2px);box-shadow:0 5px 15px rgba(102,126,234,0.4)}
+button:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+.loading{text-align:center;padding:30px;display:none}
+.loading.show{display:block}
+.spinner{border:4px solid #f3f3f3;border-top:4px solid #667eea;border-radius:50%;width:40px;height:40px;animation:spin 1s linear infinite;margin:0 auto 15px}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.result{margin-top:30px;display:none}
+.result.show{display:block}
+.result-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+.result-header h2{color:#333;font-size:24px;margin:0}
+.copy-btn{background:#4CAF50;padding:10px 20px;font-size:14px;border-radius:8px;cursor:pointer;border:none;color:#fff;font-weight:600}
+.copy-btn:hover{background:#45a049}
+.result-box{padding:25px;background:#f8f9fa;border:2px solid #e0e0e0;border-radius:10px;white-space:pre-wrap;line-height:1.6;font-size:15px;color:#333}
+.error{margin-top:20px;background:#f44336;color:white;padding:15px;border-radius:10px;display:none}
+.error.show{display:block}
+@media(max-width:768px){.container{padding:20px}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🎬 Film Marketing Post Generator</h1>
+<p class="subtitle">AI-powered social media content for your movie promotions</p>
+
+<div class="mode-toggle">
+<label>
+<input type="checkbox" id="demo-mode" checked>
+<span>Demo Mode (Demo Mode)</span>
+</label>
+</div>
+
+<div class="api-status demo" id="status">
+<strong>✨ Demo Mode Active</strong><br>
+Using professional templates - No API required
+</div>
+
+<form id="form">
+<label>Movie Title *</label>
+<input id="title" placeholder="e.g., The Avengers" required>
+
+<label>Movie Description *</label>
+<textarea id="description" placeholder="Brief description of the film, key plot points, themes, or marketing angles..." required></textarea>
+
+<div class="form-row">
+<div>
+<label>Platform *</label>
+<select id="platform" required>
+<option value="">Select platform...</option>
+<option value="Instagram">Instagram</option>
+<option value="Twitter">Twitter/X</option>
+<option value="Facebook">Facebook</option>
+<option value="LinkedIn">LinkedIn</option>
+<option value="TikTok">TikTok</option>
+</select>
+</div>
+<div>
+<label>Tone *</label>
+<select id="tone" required>
+<option value="">Select tone...</option>
+<option value="Exciting">Exciting & Energetic</option>
+<option value="Mysterious">Mysterious & Intriguing</option>
+<option value="Emotional">Emotional & Heartfelt</option>
+<option value="Professional">Professional & Informative</option>
+<option value="Humorous">Humorous & Fun</option>
+</select>
+</div>
+</div>
+
+<label>Additional Context (Optional)</label>
+<input id="extra" placeholder="e.g., Release date, cast names, festival awards, special screenings...">
+
+<button type="submit" id="btn">Generate Post</button>
+</form>
+
+<div class="loading" id="loading">
+<div class="spinner"></div>
+<p>Generating your social media post...</p>
+</div>
+
+<div class="error" id="error"></div>
+
+<div class="result" id="result-section">
+<div class="result-header">
+<h2>Generated Post</h2>
+<button class="copy-btn" id="copy-btn">📋 Copy to Clipboard</button>
+</div>
+<div class="result-box" id="result"></div>
+</div>
+</div>
+
+<script>
+// Demo templates
+const templates={
+Instagram:{
+Exciting:(t,d,e)=>`🎬✨ Get ready for the ride of your life! ${t} is coming and it's EVERYTHING you've been waiting for!\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}This is the movie everyone will be talking about. Mark your calendars! 🔥🍿\n\n#${t.replace(/\s+/g,'')} #ComingSoon #MustWatch #MovieNight #FilmLovers #NewRelease`,
+Mysterious:(t,d,e)=>`🌑 Something is coming... ${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Not everything is as it seems. The truth lies in the shadows. Are you ready to uncover the mystery? 🔍✨\n\n#${t.replace(/\s+/g,'')} #Mystery #ComingSoon #Thriller #MustSee #Suspense`,
+Emotional:(t,d,e)=>`❤️ A story that will touch your heart. ${t} is more than just a film—it's an experience you'll never forget.\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Sometimes the most powerful stories are the ones that remind us what it means to be human. Bring tissues. 💫\n\n#${t.replace(/\s+/g,'')} #Cinema #MustWatch #HeartfeltStory #EmotionalJourney`,
+Professional:(t,d,e)=>`📽️ ${t} | Coming to Theaters\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}A compelling narrative that showcases exceptional filmmaking and storytelling. This is the kind of cinema that reminds us why we love movies.\n\n#${t.replace(/\s+/g,'')} #Film #Cinema #NewRelease #MustWatch`,
+Humorous:(t,d,e)=>`😂🎬 Okay, hear us out... ${t} is about to be your new favorite movie!\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Trust us, this is going to be WILD. Your friends will thank you for dragging them to this one! 🍿😎\n\n#${t.replace(/\s+/g,'')} #MovieNight #Comedy #FilmFun #MustWatch`
+},
+Twitter:{
+Exciting:(t,d)=>`🎬 ${t} is coming & it's INCREDIBLE! ${d.substring(0,120)}... This is the movie event of the year! 🔥 #${t.replace(/\s+/g,'')} #MustWatch`,
+Mysterious:(t,d)=>`🌑 ${t}... ${d.substring(0,130)}... Not everything is as it seems. The truth awaits. #${t.replace(/\s+/g,'')} #Mystery`,
+Emotional:(t,d)=>`❤️ ${t} - A film that will stay with you long after the credits roll. ${d.substring(0,100)}... #${t.replace(/\s+/g,'')} #Cinema`,
+Professional:(t,d)=>`📽️ ${t}: ${d.substring(0,140)}... Exceptional storytelling and filmmaking. #${t.replace(/\s+/g,'')} #Film`,
+Humorous:(t,d)=>`😂 ${t} is about to be your new obsession! ${d.substring(0,120)}... Who's in? 🍿 #${t.replace(/\s+/g,'')} #MovieNight`
+},
+Facebook:{
+Exciting:(t,d,e)=>`🎬✨ COMING SOON: ${t}\n\nWe're beyond excited to share this with you! ${d}\n\n${e?'🎯 '+e+'\n\n':''}This is going to be the movie everyone is talking about. Get ready for an unforgettable experience!\n\nWho are you bringing to see this? Tag them below! 👇🍿`,
+Mysterious:(t,d,e)=>`🌑 The mystery begins... ${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}What secrets will be revealed? What truth lies beneath? You'll have to see it to believe it.\n\nAre you ready to uncover the truth? 🔍`,
+Emotional:(t,d,e)=>`❤️ A story about humanity, connection, and the moments that define us.\n\n${t} is more than entertainment—it's an experience that will move you.\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}This is the kind of film that reminds us why we love cinema.`,
+Professional:(t,d,e)=>`📽️ Announcing: ${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}A thoughtfully crafted film that demonstrates exceptional storytelling and production quality. This is cinema done right.`,
+Humorous:(t,d,e)=>`🎬😂 Alright movie lovers, gather 'round!\n\n${t} is coming and we promise it's going to be worth every minute.\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Seriously though, this one's special. Round up your movie crew and get ready!`
+},
+LinkedIn:{
+Exciting:(t,d,e)=>`I'm thrilled to announce ${t}, an innovative cinematic project that pushes boundaries in storytelling.\n\n${d}\n\n${e?e+'\n\n':''}This project represents the dedication of an exceptional creative team.\n\n#${t.replace(/\s+/g,'')} #FilmIndustry #Storytelling`,
+Mysterious:(t,d,e)=>`Excited to share ${t} - a thought-provoking exploration of ${d}\n\n${e?e+'\n\n':''}This project challenges conventional narrative structures.\n\n#${t.replace(/\s+/g,'')} #Filmmaking`,
+Emotional:(t,d,e)=>`I'm honored to present ${t} - a deeply human story about ${d}\n\n${e?e+'\n\n':''}This film represents the power of cinema to connect us through shared experiences.\n\n#${t.replace(/\s+/g,'')} #Filmmaking`,
+Professional:(t,d,e)=>`Announcing ${t}\n\n${d}\n\n${e?e+'\n\n':''}This production demonstrates strong technical execution and narrative coherence.\n\n#${t.replace(/\s+/g,'')} #FilmProduction`,
+Humorous:(t,d,e)=>`Proud to announce ${t} - a project that proves you can have both entertainment value and artistic merit!\n\n${d}\n\n${e?e+'\n\n':''}#${t.replace(/\s+/g,'')} #Filmmaking`
+},
+TikTok:{
+Exciting:(t,d,e)=>`OMG THIS MOVIE 🎬✨\n\n${t} is coming and it's INSANE\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Run don't walk when this drops!! 🏃‍♀️💨\n\n#${t.replace(/\s+/g,'')} #MovieTok #MustWatch #FYP #ForYou`,
+Mysterious:(t,d,e)=>`POV: You just discovered the movie that's about to become everyone's obsession 🌑\n\n${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Trust me on this one 👀\n\n#${t.replace(/\s+/g,'')} #MovieTok #Mystery #FYP`,
+Emotional:(t,d,e)=>`This movie is going to wreck you in the best way 😭❤️\n\n${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Bring the tissues, trust me\n\n#${t.replace(/\s+/g,'')} #MovieTok #Crying #FYP`,
+Professional:(t,d,e)=>`Film analysis time 🎬 ${t} looks like a masterclass in storytelling\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}The cinematography alone 🤌✨\n\n#${t.replace(/\s+/g,'')} #FilmTok #MovieAnalysis`,
+Humorous:(t,d,e)=>`New movie alert and this one looks WILD 😂🎬\n\n${t}\n\n${d}\n\n${e?'🎯 '+e+'\n\n':''}Who's coming with me??? Tag your movie buddy ⬇️\n\n#${t.replace(/\s+/g,'')} #MovieTok #FYP`
+}
+};
+
+const form=document.getElementById('form');
+const result=document.getElementById('result');
+const resultSection=document.getElementById('result-section');
+const errorBox=document.getElementById('error');
+const loading=document.getElementById('loading');
+const btn=document.getElementById('btn');
+const copyBtn=document.getElementById('copy-btn');
+const demoMode=document.getElementById('demo-mode');
+const status=document.getElementById('status');
+
+// Update status when mode changes
+demoMode.addEventListener('change',function(){
+if(this.checked){
+status.className='api-status demo';
+status.innerHTML='<strong>✨ Demo Mode Active</strong><br>Using professional templates - No API required';
+}else{
+status.className='api-status';
+status.innerHTML='<strong>🔑 API Mode Active</strong><br>Using Anthropic Claude API for dynamic generation';
+}
+});
+
+copyBtn.addEventListener('click',()=>{
+navigator.clipboard.writeText(result.textContent).then(()=>{
+copyBtn.textContent='✅ Copied!';
+setTimeout(()=>copyBtn.textContent='📋 Copy to Clipboard',2000);
+});
+});
+
+form.addEventListener('submit',async e=>{
+e.preventDefault();
+btn.disabled=true;
+loading.classList.add('show');
+errorBox.classList.remove('show');
+resultSection.classList.remove('show');
+result.textContent='';
+
+const title=document.getElementById('title').value;
+const description=document.getElementById('description').value;
+const platform=document.getElementById('platform').value;
+const tone=document.getElementById('tone').value;
+const extra=document.getElementById('extra').value;
+
+try{
+await new Promise(resolve=>setTimeout(resolve,demoMode.checked?1000:500));
+
+if(demoMode.checked){
+// Demo mode
+const template=templates[platform][tone];
+result.textContent=template(title,description,extra);
+}else{
+// Real API mode
+const platformGuide={
+Instagram:'Instagram post with engaging caption (150-200 words), include emoji, and suggest 5-10 relevant hashtags',
+Twitter:'Twitter/X post (max 280 characters), punchy and engaging with 2-3 hashtags',
+Facebook:'Facebook post (200-300 words), conversational and engaging with call-to-action',
+LinkedIn:'LinkedIn post (150-250 words), professional tone highlighting industry relevance',
+TikTok:'TikTok video caption (100-150 words), trendy language with hashtag suggestions'
+};
+
+let prompt=`Create a ${tone} social media post for ${platform} to promote the film "${title}".\n\nFilm Description: ${description}\n\n`;
+if(extra)prompt+=`Additional Information: ${extra}\n\n`;
+prompt+=`Requirements: ${platformGuide[platform]}\n\nMake it compelling, authentic, and optimized for ${platform}. Do not include any meta-commentary or explanations - just provide the post content ready to copy and paste.`;
+
+const res=await fetch('/api/generate',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({prompt})
+});
+
+if(!res.ok){
+const data=await res.json();
+throw new Error(data.error||'API request failed');
+}
+
+const data=await res.json();
+result.textContent=data.text;
+}
+
+resultSection.classList.add('show');
+}catch(err){
+errorBox.textContent=`Error: ${err.message}`;
+errorBox.classList.add('show');
+}finally{
+btn.disabled=false;
+loading.classList.remove('show');
+}
+});
+</script>
+</body>
+</html>

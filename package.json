@@ -1,0 +1,22 @@
+{
+  "name": "film-marketing-generator",
+  "version": "1.0.0",
+  "description": "AI-powered film marketing post generator using Anthropic Claude API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": ["film", "marketing", "ai", "claude", "anthropic"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
